@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { API_URL } from '../constants/config';
 import { uniqueByStyle } from '../utils/product';
 
-// API se out of stock products laata hai
 export default function useOutOfStockProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +17,7 @@ export default function useOutOfStockProducts() {
 
       setProducts(uniqueByStyle(json.data.data));
     } catch (err) {
-      setError(err.message || 'Products load nahi hue');
+      setError(err.message || 'Products not loaded');
     } finally {
       setLoading(false);
     }

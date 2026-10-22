@@ -2,11 +2,12 @@ import { smallImage } from '../utils/product';
 
 const RATIO = 'aspect-[3/4] w-full';
 
-// Image par click karne se full image khulti hai
 export default function ProductImage({ image, title, onClick }) {
   if (!image?.url) {
     return (
-      <div className={`flex items-center justify-center bg-slate-100 text-sm text-slate-400 ${RATIO}`}>
+      <div
+        className={`flex items-center justify-center bg-slate-100 text-sm text-slate-400 ${RATIO}`}
+      >
         No image
       </div>
     );

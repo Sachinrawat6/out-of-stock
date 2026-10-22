@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 
-// Full image popup: Esc, background click ya close button se band hota hai
 export default function ImageModal({ product, onClose }) {
   useEffect(() => {
     const onKey = (e) => {
@@ -8,7 +7,6 @@ export default function ImageModal({ product, onClose }) {
     };
     document.addEventListener('keydown', onKey);
 
-    // popup khula ho toh peeche ka page scroll na ho
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -35,7 +33,6 @@ export default function ImageModal({ product, onClose }) {
         ×
       </button>
 
-      {/* image par click karne se popup band nahi hoga */}
       <figure onClick={(e) => e.stopPropagation()} className="max-h-full max-w-3xl">
         <img
           src={product.featuredImage.url}
