@@ -37,6 +37,7 @@ export default function ActiveProducts() {
 
   const isFiltering = Boolean(search) || (statusFilter && statusFilter !== 'all');
   const exportList = selectedCount > 0 ? selectedProducts : filtered;
+  console.log('Active Product page');
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <PageHeader
