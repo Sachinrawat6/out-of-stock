@@ -1,1 +1,5 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+.nl-wrap {
+  display: none;
+  opacity: 0;
+}
