@@ -15,7 +15,6 @@ export default function useFabricStock() {
       if (!res.ok || !json.success) throw new Error(json.message || 'API error');
 
       setStocks(json.data);
-      console.log('response', json.data);
     } catch (err) {
       setError(err.message || 'Stock not loaded');
     } finally {

@@ -1,7 +1,7 @@
 export const API_URL =
-  // import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1/orders/out-of-stocks';
+  // import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1/shopify-products';
   import.meta.env.VITE_API_URL ||
-  'https://shopify-oms-v2-backend.onrender.com/api/v1/orders/out-of-stocks';
+  'https://shopify-oms-v2-backend.onrender.com/api/v1/shopify-products';
 
 export const STATUS_OPTIONS = [
   { value: 'ALL', label: 'All status' },
@@ -10,5 +10,5 @@ export const STATUS_OPTIONS = [
 ];
 
 export const FABRIC_STOCK_URL = 'https://raw-material-backend.onrender.com/api/v1/stock';
-export const CSV_FILE_NAME = 'out-of-stock-products.csv';
-export const PDF_FILE_NAME = 'out-of-stock-products.pdf';
+export const CSV_FILE_NAME = 'shopify-products.csv';
+export const PDF_FILE_NAME = 'shopify-products.pdf';
