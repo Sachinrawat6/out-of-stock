@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import ProductFilters from '../components/ProductFilters';
-import SalesSortFilter from '../components/SalesSortFilter';
+import SalesSortFilter from '../components/SalessortFilter';
 import ProductList from '../components/ProductList';
 import ErrorMessage from '../components/ErrorMessage';
 

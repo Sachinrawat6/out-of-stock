@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import ProductFilters from '../components/ProductFilters';
-import SalesSortFilter from '../components/SalesSortFilter';
+
 import ProductList from '../components/ProductList';
 import ErrorMessage from '../components/ErrorMessage';
 import useOutOfStockProducts from '../hooks/useOutOfStockProducts';
@@ -11,6 +11,7 @@ import { exportProductsPdf } from '../utils/exportPdf';
 import useFabricStock from '../hooks/useFabricStock';
 import useProductSelection from '../hooks/useProductSelection';
 import useSalesSort from '../hooks/useSalesSort';
+import SalesSortFilter from '../components/SalessortFilter';
 
 export default function OutOfStockPage() {
   const { products, total, loading, loadingMore, hasNextPage, loadMore, error, reload } =
