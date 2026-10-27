@@ -1,16 +1,10 @@
 import Fabrics from './Fabrics';
+import Pricing from './Pricing';
 import ProductImage from './ProductImage';
+import SalesSummary from './SalesSummary';
 import Sizes from './Sizes';
 import StatusBadge from './StatusBadge';
 
-// export default function ProductCard({
-//   product,
-//   onImageClick,
-//   stocks,
-//   type,
-//   selected = false,
-//   onToggle,
-// }) {
 export default function ProductCard({
   product,
   onImageClick,
@@ -18,6 +12,8 @@ export default function ProductCard({
   type,
   selected = false,
   onToggle,
+  salesData,
+  rackData,
 }) {
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -126,10 +122,16 @@ export default function ProductCard({
           {product.title}
         </h2>
         <div>
-          <Sizes sizes={product.variants.edges} />
+          <Sizes sizes={product.variants.edges} sales={salesData} racks={rackData} />
+        </div>
+        <div>
+          <SalesSummary sales={salesData} />
         </div>
         <div>
           <Fabrics styleNumber={product.styleNumber} stocks={stocks} />
+        </div>
+        <div>
+          <Pricing product={product} />
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-slate-100 pt-3">

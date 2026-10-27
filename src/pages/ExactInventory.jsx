@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import ProductFilters from '../components/ProductFilters';
+import SalesSortFilter from '../components/SalesSortFilter';
 import ProductList from '../components/ProductList';
 import ErrorMessage from '../components/ErrorMessage';
 
 import useProductFilters from '../hooks/useProductFilters';
+import useSalesSort from '../hooks/useSalesSort';
 import { exportProductsCsv } from '../utils/exportCsv';
 import { exportProductsPdf } from '../utils/exportPdf';
 import useFabricStock from '../hooks/useFabricStock';
@@ -18,36 +20,49 @@ export default function ExactInventory() {
 
   const { filtered, search, setSearch, statusFilter, setStatusFilter } =
     useProductFilters(products);
+
+  // Sales data + sorting (runs after the search/status filters)
+  const { salesByStyle, sortedProducts, sortBy, setSortBy, order, setOrder } =
+    useSalesSort(filtered);
+
   const { selectedIds, selectedProducts, selectedCount, toggle, selectAll, clear } =
     useProductSelection(products);
   const { stocks, stockLoading, stockError } = useFabricStock();
 
   const sentinelRef = useRef(null);
 
+  // Infinite scroll. Skipped while a sort is active, because the effect below loads every page.
   useEffect(() => {
     const node = sentinelRef.current;
-    if (!node || !hasNextPage || loading || loadingMore || error) return;
+    if (sortBy || !node || !hasNextPage || loading || loadingMore || error) return;
 
     const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && loadMore(), {
       rootMargin: '300px',
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasNextPage, loading, loadingMore, error, loadMore, filtered.length]);
+  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore, sortedProducts.length]);
+
+  // While a sort is active, keep loading pages so the sort covers ALL products
+  useEffect(() => {
+    if (!sortBy || !hasNextPage || loading || loadingMore || error) return;
+    loadMore();
+  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore]);
 
   const isFiltering = Boolean(search) || (statusFilter && statusFilter !== 'all');
-  const exportList = selectedCount > 0 ? selectedProducts : filtered;
+  const exportList = selectedCount > 0 ? selectedProducts : sortedProducts;
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
       <PageHeader
         title="Exact Inventory Products"
         loading={loading}
         stockLoading={stockLoading}
-        shown={filtered.length}
+        shown={sortedProducts.length}
         total={total}
         selectedCount={selectedCount}
         onClearSelection={clear}
-        onSelectAll={() => selectAll(filtered)}
+        onSelectAll={() => selectAll(sortedProducts)}
         onExportCsv={() => exportProductsCsv(exportList, stocks)}
         onExportPdf={() => exportProductsPdf(exportList, stocks, 'Exact Inventory Products')}
       />
@@ -60,6 +75,19 @@ export default function ExactInventory() {
           onStatus={setStatusFilter}
         />
 
+        <SalesSortFilter
+          sortBy={sortBy}
+          order={order}
+          onSortByChange={setSortBy}
+          onOrderChange={setOrder}
+        />
+
+        {sortBy && hasNextPage && (
+          <p className="mb-4 text-sm text-slate-500">
+            Loading the remaining products so the sort covers all of them...
+          </p>
+        )}
+
         {(loading || stockLoading) && (
           <p className="py-16 text-center text-slate-500">Loading products...</p>
         )}
@@ -71,7 +99,7 @@ export default function ExactInventory() {
           />
         )}
 
-        {!loading && !error && filtered.length === 0 && (
+        {!loading && !error && sortedProducts.length === 0 && (
           <p className="py-16 text-center text-slate-500">
             {isFiltering && hasNextPage
               ? 'No match found in loaded products. More products are loading...'
@@ -79,13 +107,14 @@ export default function ExactInventory() {
           </p>
         )}
 
-        {!loading && filtered.length > 0 && (
+        {!loading && sortedProducts.length > 0 && (
           <ProductList
-            products={filtered}
+            products={sortedProducts}
             type="Exact Inventory"
             stocks={stocks}
             selectedIds={selectedIds}
             onToggle={toggle}
+            salesByStyle={salesByStyle}
           />
         )}
 

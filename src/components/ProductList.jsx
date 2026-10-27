@@ -1,11 +1,33 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProductCard from './ProductCard';
 import ImageModal from './ImageModal';
+import useRackSpace from '../hooks/useRackSpace';
 
-// Mobile: 1 card | Tablet: 2 cards | Desktop: 4 cards
-export default function ProductList({ products, stocks, type, selectedIds, onToggle }) {
+// Mobile: 1 card | Tablet: 2 cards | Desktop: 3 cards
+// `products` is already sorted by the page. `salesByStyle` comes from useSalesSort.
+export default function ProductList({
+  products,
+  stocks,
+  type,
+  selectedIds,
+  onToggle,
+  salesByStyle = {},
+}) {
   const [selected, setSelected] = useState(null);
   const closeModal = useCallback(() => setSelected(null), []);
+
+  // Rack space data is fetched here, so no page needs to change
+  const { rackSpaces, fetchRackSpaces } = useRackSpace();
+
+  useEffect(() => {
+    fetchRackSpaces().catch(() => {});
+  }, [fetchRackSpaces]);
+
+  // { 12668: {...rack space doc}, 19690: {...}, ... }
+  const rackByStyle = useMemo(
+    () => Object.fromEntries(rackSpaces.map((r) => [r.styleNumber, r])),
+    [rackSpaces]
+  );
 
   return (
     <>
@@ -19,6 +41,8 @@ export default function ProductList({ products, stocks, type, selectedIds, onTog
             onImageClick={() => setSelected(p)}
             selected={selectedIds?.has(p.id)}
             onToggle={onToggle}
+            salesData={salesByStyle[Number(p.styleNumber)]}
+            rackData={rackByStyle[Number(p.styleNumber)]}
           />
         ))}
       </ul>
