@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import PageHeader from '../components/PageHeader';
 import ProductFilters from '../components/ProductFilters';
-
+import SalesSortFilter from '../components/SalessortFilter';
 import ProductList from '../components/ProductList';
 import ErrorMessage from '../components/ErrorMessage';
 import useOutOfStockProducts from '../hooks/useOutOfStockProducts';
@@ -11,7 +11,6 @@ import { exportProductsPdf } from '../utils/exportPdf';
 import useFabricStock from '../hooks/useFabricStock';
 import useProductSelection from '../hooks/useProductSelection';
 import useSalesSort from '../hooks/useSalesSort';
-import SalesSortFilter from '../components/SalessortFilter';
 
 export default function OutOfStockPage() {
   const { products, total, loading, loadingMore, hasNextPage, loadMore, error, reload } =
@@ -21,7 +20,7 @@ export default function OutOfStockPage() {
     useProductFilters(products);
 
   // Sales data + sorting (runs after the search/status filters)
-  const { salesByStyle, sortedProducts, sortBy, setSortBy, order, setOrder } =
+  const { salesByStyle, rackByStyle, sortedProducts, filterProps, needsAllProducts } =
     useSalesSort(filtered);
 
   const { selectedIds, selectedProducts, selectedCount, toggle, selectAll, clear } =
@@ -34,20 +33,20 @@ export default function OutOfStockPage() {
   // Infinite scroll. Skipped while a sort is active, because the effect below loads every page.
   useEffect(() => {
     const node = sentinelRef.current;
-    if (sortBy || !node || !hasNextPage || loading || loadingMore || error) return;
+    if (needsAllProducts || !node || !hasNextPage || loading || loadingMore || error) return;
 
     const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && loadMore(), {
       rootMargin: '300px',
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore, sortedProducts.length]);
+  }, [needsAllProducts, hasNextPage, loading, loadingMore, error, loadMore, sortedProducts.length]);
 
   // While a sort is active, keep loading pages so the sort covers ALL products
   useEffect(() => {
-    if (!sortBy || !hasNextPage || loading || loadingMore || error) return;
+    if (!needsAllProducts || !hasNextPage || loading || loadingMore || error) return;
     loadMore();
-  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore]);
+  }, [needsAllProducts, hasNextPage, loading, loadingMore, error, loadMore]);
 
   const isFiltering = Boolean(search) || (statusFilter && statusFilter !== 'all');
   const exportList = selectedCount > 0 ? selectedProducts : sortedProducts;
@@ -63,7 +62,7 @@ export default function OutOfStockPage() {
         selectedCount={selectedCount}
         onClearSelection={clear}
         onSelectAll={() => selectAll(sortedProducts)}
-        onExportCsv={() => exportProductsCsv(exportList, stocks)}
+        onExportCsv={() => exportProductsCsv(exportList, stocks, { salesByStyle, rackByStyle })}
         onExportPdf={() => exportProductsPdf(exportList, stocks, 'Out of stocks Products')}
       />
 
@@ -74,13 +73,8 @@ export default function OutOfStockPage() {
           status={statusFilter}
           onStatus={setStatusFilter}
         />
-        <SalesSortFilter
-          sortBy={sortBy}
-          order={order}
-          onSortByChange={setSortBy}
-          onOrderChange={setOrder}
-        />
-        {sortBy && hasNextPage && (
+        <SalesSortFilter {...filterProps} />
+        {needsAllProducts && hasNextPage && (
           <p className="mb-4 text-sm text-slate-500">
             Loading the remaining products so the sort covers all of them...
           </p>
@@ -113,6 +107,7 @@ export default function OutOfStockPage() {
             selectedIds={selectedIds}
             onToggle={toggle}
             salesByStyle={salesByStyle}
+            rackByStyle={rackByStyle}
           />
         )}
 

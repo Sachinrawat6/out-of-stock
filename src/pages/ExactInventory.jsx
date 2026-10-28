@@ -22,7 +22,7 @@ export default function ExactInventory() {
     useProductFilters(products);
 
   // Sales data + sorting (runs after the search/status filters)
-  const { salesByStyle, sortedProducts, sortBy, setSortBy, order, setOrder } =
+  const { salesByStyle, rackByStyle, sortedProducts, filterProps, needsAllProducts } =
     useSalesSort(filtered);
 
   const { selectedIds, selectedProducts, selectedCount, toggle, selectAll, clear } =
@@ -34,20 +34,20 @@ export default function ExactInventory() {
   // Infinite scroll. Skipped while a sort is active, because the effect below loads every page.
   useEffect(() => {
     const node = sentinelRef.current;
-    if (sortBy || !node || !hasNextPage || loading || loadingMore || error) return;
+    if (needsAllProducts || !node || !hasNextPage || loading || loadingMore || error) return;
 
     const observer = new IntersectionObserver(([entry]) => entry.isIntersecting && loadMore(), {
       rootMargin: '300px',
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore, sortedProducts.length]);
+  }, [needsAllProducts, hasNextPage, loading, loadingMore, error, loadMore, sortedProducts.length]);
 
   // While a sort is active, keep loading pages so the sort covers ALL products
   useEffect(() => {
-    if (!sortBy || !hasNextPage || loading || loadingMore || error) return;
+    if (!needsAllProducts || !hasNextPage || loading || loadingMore || error) return;
     loadMore();
-  }, [sortBy, hasNextPage, loading, loadingMore, error, loadMore]);
+  }, [needsAllProducts, hasNextPage, loading, loadingMore, error, loadMore]);
 
   const isFiltering = Boolean(search) || (statusFilter && statusFilter !== 'all');
   const exportList = selectedCount > 0 ? selectedProducts : sortedProducts;
@@ -63,7 +63,7 @@ export default function ExactInventory() {
         selectedCount={selectedCount}
         onClearSelection={clear}
         onSelectAll={() => selectAll(sortedProducts)}
-        onExportCsv={() => exportProductsCsv(exportList, stocks)}
+        onExportCsv={() => exportProductsCsv(exportList, stocks, { salesByStyle, rackByStyle })}
         onExportPdf={() => exportProductsPdf(exportList, stocks, 'Exact Inventory Products')}
       />
 
@@ -75,14 +75,9 @@ export default function ExactInventory() {
           onStatus={setStatusFilter}
         />
 
-        <SalesSortFilter
-          sortBy={sortBy}
-          order={order}
-          onSortByChange={setSortBy}
-          onOrderChange={setOrder}
-        />
+        <SalesSortFilter {...filterProps} />
 
-        {sortBy && hasNextPage && (
+        {needsAllProducts && hasNextPage && (
           <p className="mb-4 text-sm text-slate-500">
             Loading the remaining products so the sort covers all of them...
           </p>
@@ -115,6 +110,7 @@ export default function ExactInventory() {
             selectedIds={selectedIds}
             onToggle={toggle}
             salesByStyle={salesByStyle}
+            rackByStyle={rackByStyle}
           />
         )}
 

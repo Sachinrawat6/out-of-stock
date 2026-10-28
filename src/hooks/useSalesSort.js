@@ -1,44 +1,78 @@
 import { useEffect, useMemo, useState } from 'react';
 import useSales from './useSales';
-import { SORT_OPTIONS } from '../components/SalessortFilter';
+import useRackSpace from './useRackSpace';
+import { METRICS } from '../utils/salesMetrics';
 
-// Fetches the sales data once and sorts a list of products by it.
+// Fetches sales and rack space data once, then sorts a list of products by one or more fields.
 // Use it in the page (not in the list), so it works together with pagination.
 export default function useSalesSort(products) {
-  const [sortBy, setSortBy] = useState(''); // '' = original order
-  const [order, setOrder] = useState('desc'); // 'desc' = high to low
+  // [{ key: 'totalSales', order: 'desc' }, ...]  (empty = original order)
+  const [sorts, setSorts] = useState([]);
 
   const { sales, fetchSales } = useSales();
+  const { rackSpaces, fetchRackSpaces } = useRackSpace();
 
   useEffect(() => {
     fetchSales().catch(() => {});
-  }, [fetchSales]);
+    fetchRackSpaces().catch(() => {});
+  }, [fetchSales, fetchRackSpaces]);
 
-  // { 12668: {...sales doc}, 19690: {...}, ... }
+  // { 12668: {...doc}, 19690: {...}, ... }
   const salesByStyle = useMemo(
     () => Object.fromEntries(sales.map((s) => [s.styleNumber, s])),
     [sales]
   );
+  const rackByStyle = useMemo(
+    () => Object.fromEntries(rackSpaces.map((r) => [r.styleNumber, r])),
+    [rackSpaces]
+  );
 
   const sortedProducts = useMemo(() => {
-    const field = SORT_OPTIONS.find((option) => option.value === sortBy)?.field;
-    if (!field) return products;
+    // Ignore unknown keys
+    const activeSorts = sorts.filter((sort) => METRICS[sort.key]);
+    if (activeSorts.length === 0) return products;
 
-    const direction = order === 'asc' ? 1 : -1;
-    const getValue = (product) => salesByStyle[Number(product.styleNumber)]?.[field];
+    const getValue = (product, key) => {
+      const styleNumber = Number(product.styleNumber);
+      return METRICS[key]({
+        product,
+        sales: salesByStyle[styleNumber],
+        racks: rackByStyle[styleNumber],
+      });
+    };
 
     return [...products].sort((a, b) => {
-      const valueA = getValue(a);
-      const valueB = getValue(b);
+      // Go through the sorts in priority order. The next one is used only when values are equal.
+      for (const { key, order } of activeSorts) {
+        const valueA = getValue(a, key);
+        const valueB = getValue(b, key);
 
-      // Products without sales data always stay at the end
-      if (valueA == null && valueB == null) return 0;
-      if (valueA == null) return 1;
-      if (valueB == null) return -1;
+        // Products without data always stay after the others
+        if (valueA == null && valueB == null) continue;
+        if (valueA == null) return 1;
+        if (valueB == null) return -1;
 
-      return (valueA - valueB) * direction;
+        if (valueA !== valueB) {
+          return (valueA - valueB) * (order === 'asc' ? 1 : -1);
+        }
+      }
+      return 0;
     });
-  }, [products, salesByStyle, sortBy, order]);
+  }, [products, salesByStyle, rackByStyle, sorts]);
 
-  return { salesByStyle, sortedProducts, sortBy, setSortBy, order, setOrder };
+  // Sorting needs every page of products to be loaded
+  const needsAllProducts = sorts.length > 0;
+
+  // Everything SalesSortFilter needs: <SalesSortFilter {...filterProps} />
+  const filterProps = { sorts, onSortsChange: setSorts };
+
+  return {
+    salesByStyle,
+    rackByStyle,
+    sortedProducts,
+    needsAllProducts,
+    filterProps,
+    sorts,
+    setSorts,
+  };
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Fabrics from './Fabrics';
 import Pricing from './Pricing';
 import ProductImage from './ProductImage';
@@ -15,6 +16,7 @@ export default function ProductCard({
   salesData,
   rackData,
 }) {
+  const [showSizes, setShowSizes] = useState(false);
   const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
   const STATUS_COLOR_MAP = {
@@ -90,7 +92,6 @@ export default function ProductCard({
         <p className="absolute bottom-2 right-4 font-bold">
           {product.styleNumber > 24048 && product.styleNumber < 24099 && (
             <span className="bg-rose-500 text-white rounded-2xl py-1 px-4 text-[12px]">
-              {' '}
               Duplicate
             </span>
           )}
@@ -121,11 +122,24 @@ export default function ProductCard({
         >
           {product.title}
         </h2>
-        <div>
-          <Sizes sizes={product.variants.edges} sales={salesData} racks={rackData} />
+        <div className="flex justify-end py-1">
+          <button
+            type="button"
+            onClick={() => setShowSizes((prev) => !prev)}
+            aria-expanded={showSizes}
+            className="rounded-full bg-black px-4 py-1.5 text-[11px] font-medium text-white transition hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2"
+          >
+            {showSizes ? 'Hide Details' : 'Show Details'}
+          </button>
         </div>
+
+        {showSizes && (
+          <div>
+            <Sizes sizes={product.variants.edges} sales={salesData} racks={rackData} />
+          </div>
+        )}
         <div>
-          <SalesSummary sales={salesData} />
+          <SalesSummary sales={salesData} racks={rackData} />
         </div>
         <div>
           <Fabrics styleNumber={product.styleNumber} stocks={stocks} />

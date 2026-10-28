@@ -36,16 +36,6 @@ const Sizes = ({ sizes = [], sales = null, racks = null }) => {
 
   return (
     <div>
-      {/* Master rack stock of the whole style */}
-      {racks && (
-        <p className="mb-2 text-xs text-slate-500">
-          Master in stock:{' '}
-          <span className="font-semibold tabular-nums text-slate-800">
-            {racks.masterInStock ?? 0}
-          </span>
-        </p>
-      )}
-
       <ul
         className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3"
         aria-label="Size wise inventory and sales"

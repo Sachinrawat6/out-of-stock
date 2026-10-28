@@ -18,7 +18,6 @@ export default function PageHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-md supports-backdrop-filter:bg-white/60">
-      {/* // <header className="border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-md supports-backdrop-filter:bg-white/60"> */}
       <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between md:py-5">
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold tracking-tight text-slate-900 sm:text-2xl">
