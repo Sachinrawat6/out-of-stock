@@ -7,7 +7,7 @@ export const SORT_OPTIONS = [
   { value: 'rtv', label: 'RTV', title: 'Customer returns (RTV)' },
   { value: 'returnPercent', label: 'Return %', title: 'Return % = RTV / total sales' },
   { value: 'rackStock', label: 'Rack stock', title: 'Stock in racks' },
-  { value: 'inventory', label: 'In stock', title: 'In stock (inventory)' },
+  { value: 'inventory', label: 'Total listed stock', title: 'In stock (inventory)' },
 ];
 
 // Controlled component: the parent (useSalesSort) keeps `sorts` in state.
